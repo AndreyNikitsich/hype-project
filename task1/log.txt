@@ -1,0 +1,11 @@
+commit d8d347a7dbe69c0a776dfa5ceabddbb7a1063bc5 (HEAD -> master)
+Author: andrey <andrey.nikitsich@gmail.com>
+Date:   Fri Feb 12 18:26:45 2021 +0300
+
+    add status.txt
+
+commit af31f069c93a6f60254b9f4eaa7c6dcc40665372
+Author: andrey <andrey.nikitsich@gmail.com>
+Date:   Fri Feb 12 18:18:17 2021 +0300
+
+    add .gitignore
