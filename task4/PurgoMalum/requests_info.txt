@@ -1,0 +1,6 @@
+"Makes Rick & Morty more polite"
+
+1 request: request with parameter "text" (used all responces from Fuck Off as a Service) and "containsprofanity". If our string contains
+profanity - we will get true. Responce - false
+2 request: like in point 1, but other string. Responce - true.
+3 request: used same string as in second. Also was used parameter "fillchar"=_. It means that all symbols in all rude words will changed to "_".
