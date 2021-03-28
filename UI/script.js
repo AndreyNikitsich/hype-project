@@ -1,5 +1,149 @@
-(function() {
-    var adList = [
+(function () {
+
+
+    adTemplate = {
+        id: "",
+        description: "",
+        createdAt: new Date("2021-02-01T23:00:00"),
+        link: "",
+        vendor: "",
+        photoLink: "", //not necessary
+        hashTags: ["tag1", "tag2"],
+        discount: "",
+        validUntill: new Date("2021-05-01"),
+        rating: 0, // not necassery
+        reviews: [] //not necassary
+    }
+
+
+    class AdCollection {
+
+        constructor(adList) {
+            this._ads = []
+            adList.forEach(el => {
+                if (AdCollection.validateAd(el) && this._validID(el.id)) {
+                    this._ads.push(el);
+                }
+            });
+        }
+
+        static validateAd(ad) {
+            var valid = true;
+            for (var key in ad) {
+                if (!(adTemplate.hasOwnProperty(key) && (typeof adTemplate[key] === typeof ad[key]))) {
+                    valid = false;
+                    break;
+                }
+            }
+            return valid;
+        }
+
+        _validID(id) {
+            var indexOfItem = this._ads.find(function (i) {
+                return i.id === id;
+            });
+
+            if (indexOfItem === undefined) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        addAd(obj) {
+            var success = false;
+            if (AdCollection.validateAd(obj) && this._validID(obj.id)) {
+                this._ads.push(obj);
+                success = true;
+            }
+            return success;
+        }
+
+        addAll(adList) {
+            var invalid = [];
+            adList.forEach(el => {
+                if (AdCollection.validateAd(el) && this._validID(el)) {
+                    this._ads.push(el);
+                } else {
+                    invalid.push(el);
+                }
+            });
+            return invalid;
+        }
+
+        getAd(id) {
+            return this._ads.find(item => {
+                return item.id === id;
+            })
+        }
+
+        getPage(skip = 0, top = 10, filterConfig) {
+            var res = this._ads.slice();
+
+            if (filterConfig.hashTags) {
+                res = res.filter(function (ad) {
+                    return ad.hashTags.includes(filterConfig.hashTags);
+                })
+            }
+
+            if (filterConfig.vendor) {
+                res = res.filter(function (ad) {
+                    return ad.vendor == filterConfig.vendor;
+                })
+            }
+
+            if (filterConfig.date) {
+                res = res.filter(function (ad) {
+                    return filterConfig.date[0] < ad.createdAt && ad.createdAt < filterConfig.date[1];
+                })
+            }
+
+
+            if (skip === 0) {
+                return res.slice(0, skip + top + 1).sort((a, b) => { return a.createdAt - b.createdAt });
+            } else {
+                return res.slice(skip + 1, skip + top + 1).sort((a, b) => { return a.createdAt - b.createdAt });
+            }
+
+        }
+
+        edit(id, editItem) {
+            var toEdit = this._ads.findIndex(item => {
+                return item.id === id;
+            })
+
+            if (toEdit === -1) {
+                return false;
+            }
+
+            for (var key in editItem) {
+                if (key !== "vendor" && key !== "id" && key !== "createdAt") {
+                    this._ads[toEdit][key] = editItem[key];
+                }
+            }
+            return true;
+        }
+
+        removeAd(id) {
+            var toDelete = this._ads.findIndex(item => {
+                return item.id === id;
+            })
+
+            if (toDelete === -1) {
+                return false;
+            }
+
+            this._ads.splice(toDelete, 1);
+            return true;
+
+        }
+    }
+
+
+
+
+
+    collection = new AdCollection([
         {
             id: "1",
             description: "McDrive in 90 seconds",
@@ -201,145 +345,30 @@
             discount: "5%",
             validUntill: new Date("2021-05-01")
         },
-        ];
-        
-    function cmpByDate(a,b) {
-        return a.createdAt - b.createdAt;
-    }  
+    ]);
 
-    Array.prototype.contains = function(array) {
-        return array.every(function(item) {
-            return this.indexOf(item) !== -1;
-        }, this);
-    }
 
-    function getAds(skip = 0, top = 10, filterConfig){
-        var res = adList.slice();
-
-        if(filterConfig.hashTags){
-            res = res.filter(function(ad){
-                return ad.hashTags.contains(filterConfig.hashTags);
-            })
-        }
-
-        if(filterConfig.vendor){
-            res = res.filter(function(ad){
-                return ad.vendor==filterConfig.vendor;
-            })
-        }
-
-        if(filterConfig.date){
-            res = res.filter(function(ad){
-                return filterConfig.date[0]<ad.createdAt&&ad.createdAt<filterConfig.date[1];
-            })
-        }
-        
-
-        if (skip === 0){
-            return res.slice(0, skip+top+1).sort(cmpByDate);
-        }else {
-            return res.slice(skip + 1, skip+top+1).sort(cmpByDate);
-        }
-        
-    }
-
-    function getAd(id){
-        return adList.find(function(item,index,arr){
-            return item.id===id;
-        })
-    }
-
-    function removeAd(id){
-        var toDelete = adList.findIndex(function(item,index,arr){
-            return item.id===id;
-        })
-
-        if(toDelete===-1){
-            return false;
-        }else{
-            adList.splice(toDelete,1);
-            return true;
-        }
-    }
-
-    function edit(id, editItem){
-        var toEdit = adList.findIndex(function(item,index,arr){
-            return item.id===id;
-        })
-
-        if(toEdit===-1){
-            return false;
-        }else{
-            for(var key in editItem){
-                if(key!=="vendor"&&key!=="id"&&key!=="createdAt"){
-                    adList[toEdit][key] = editItem[key];
-                }
-            }
-            return true;
-        }
-    }
-
-    function validateAd(ad){
-        var valid = false;
-        if(!ad.id || typeof ad.id !== "string"){
-
-        }
-        else if(!ad.description || typeof ad.description !== "string" || ad.description.length>=200){
-
-        }else if(!ad.createdAt){
-
-        }else if(!ad.link || typeof ad.link !== "string"){
-
-        }else if(!ad.vendor || typeof ad.vendor !== "string"){
-
-        }else if(!ad.hashTags || typeof ad.hashTags !== "object"){
-
-        }else if(!ad.discount || typeof ad.discount !== "string"){
-
-        }else if(!ad.validUntill || typeof ad.validUntill !== "object"){
-
-        }else if(ad.photoLink && typeof ad.photoLink!=="string"){
-
-        }else if(ad.rating && typeof ad.rating!=="number"){
-
-        }else if(ad.rating&&typeof ad.reviews!=="object"){
-
-        }else{
-            valid=true;
-        }
-        return valid;
-    }
-
-    function addAd(obj){
-        var success = false;
-        if(validateAd(obj)){
-            adList.push(obj);
-            success = true;
-        }
-        return success;
-    }
-
-    console.log("Test getAds(): ");
-    console.log(getAds(0,10, {hashTags: ["food", "romantic"]}));
-    console.log(getAds(0,10, {vendor: "McDonalds"}));
-    console.log(getAds(0,10, {vendor: "McDonalds", hashTags: ["combo"]}));
-    console.log(getAds(0,10, {vendor: "Pizza Tempo"}));
+    console.log("Test getPage(): ");
+    console.log(collection.getPage(0, 10, { hashTags: ["food", "romantic"] }));
+    console.log(collection.getPage(0, 10, { vendor: "McDonalds" }));
+    console.log(collection.getPage(0, 10, { vendor: "McDonalds", hashTags: ["combo"] }));
+    console.log(collection.getPage(0, 10, { vendor: "Pizza Tempo" }));
 
     console.log("Test getAd(): ");
-    console.log(getAd("5"));
-    console.log(getAd("45"));
+    console.log(collection.getAd("5"));
+    console.log(collection.getAd("45"));
 
     console.log("Test removeAd(): ");
-    console.log(removeAd("5"));
-    console.log(getAd("5"));
+    console.log(collection.removeAd("5"));
+    console.log(collection.getAd("5"));
 
     console.log("Test edit(): ");
-    console.log(getAd("7"));
-    console.log(edit("7", {discount: "55%"}));
-    console.log(getAd("7"));
+    console.log(collection.getAd("7"));
+    console.log(collection.edit("7", { discount: "55%" }));
+    console.log(collection.getAd("7"));
 
     console.log("Test addAd(): ");
-    console.log(addAd(        {
+    console.log(collection.addAd({
         id: 12,
         description: "Best price in Green",
         createdAt: new Date("2021-06-01T23:00:00"),
@@ -348,9 +377,9 @@
         hashTags: ["cheaply", "fresh", "organic"],
         discount: "20%",
         validUntill: new Date("2021-07-01")
-    },));
-    console.log(getAd("21"));
-    console.log(addAd(        {
+    }));
+    console.log(collection.getAd("21"));
+    console.log(collection.addAd({
         id: "21",
         description: "Best price in Green",
         createdAt: new Date("2021-06-01T23:00:00"),
@@ -359,9 +388,6 @@
         hashTags: ["cheaply", "fresh", "organic"],
         discount: "20%",
         validUntill: new Date("2021-07-01")
-    },));
-    console.log(getAd("21"));
-
-
-
+    }));
+    console.log(collection.getAd("21"));
 }())
